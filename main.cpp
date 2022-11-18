@@ -4,14 +4,12 @@
 const float wheelSpeed = 0.1;
 
 // digital outputs for the wheels
-DigitalOut rightFwdDrive(D7), leftBackDrive(D6),
+DigitalOut rightFwdDrive(D7), rightBackDrive(D6),
     leftFwdDrive(D5), leftBackDrive(D4);
-rightFwdDrive = leftBackDrive = leftFwdDrive = leftBackDrive = 0;
+
 // digital outputs for the Pulse Width Modulation controlling wheel speed
 PwmOut rightWheelSpeed(D9), leftWheelSpeed(D3);
-rightWheelSpeed = leftWheelSpeed = wheelSpeed;
-rightWheelSpeed.period(0.5);
-leftWheelSpeed.period(0.5);
+
 // ticker that movement instructions are sent to
 Ticker movement;
 
@@ -46,6 +44,10 @@ cardinalDirection face = north;
 
 int main()
 {
+    rightFwdDrive = leftBackDrive = leftFwdDrive = rightBackDrive = 0;
+    rightWheelSpeed = leftWheelSpeed = wheelSpeed;
+    rightWheelSpeed.period(0.5);
+    leftWheelSpeed.period(0.5);
     movement.attach(&MoveFwd, 1000ms);
 }
 
@@ -59,12 +61,12 @@ void MoveFwd()
             if (y < goalY)
             {
                 rightFwdDrive = leftFwdDrive = 1;
-                leftBackDrive = leftBackDrive = 0;
+                rightBackDrive = leftBackDrive = 0;
                 y++;
             }
             else if (y > goalY)
             {
-                leftBackDrive = leftBackDrive = 1;
+                rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 y--;
             }
@@ -78,14 +80,14 @@ void MoveFwd()
         {
             if (y < goalY)
             {
-                leftBackDrive = leftBackDrive = 1;
+                rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 y++;
             }
             else if (y > goalY)
             {
                 rightFwdDrive = leftFwdDrive = 1;
-                leftBackDrive = leftBackDrive = 0;
+                rightBackDrive = leftBackDrive = 0;
                 y--;
             }
             else if (x < goalX)
@@ -99,12 +101,12 @@ void MoveFwd()
             if (x < goalX)
             {
                 rightFwdDrive = leftFwdDrive = 1;
-                leftBackDrive = leftBackDrive = 0;
+                rightBackDrive = leftBackDrive = 0;
                 x++;
             }
             else if (x > goalX)
             {
-                leftBackDrive = leftBackDrive = 1;
+                rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 x--;
             }
@@ -118,14 +120,14 @@ void MoveFwd()
         {
             if (x < goalX)
             {
-                leftBackDrive = leftBackDrive = 1;
+                rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 x++;
             }
             else if (x > goalX)
             {
                 rightFwdDrive = leftFwdDrive = 1;
-                leftBackDrive = leftBackDrive = 0;
+                rightBackDrive = leftBackDrive = 0;
                 x--;
             }
             else if (y < goalY)
@@ -143,7 +145,7 @@ void MoveFwd()
 void turnLeft()
 {
     rightFwdDrive = leftBackDrive = 1;
-    leftBackDrive = leftFwdDrive = 0;
+    rightBackDrive = leftFwdDrive = 0;
     if (i == 0)
     {
         switch (face)
@@ -171,7 +173,7 @@ void turnLeft()
 }
 void turnRight()
 {
-    leftBackDrive = leftFwdDrive = 1;
+    rightBackDrive = leftFwdDrive = 1;
     rightFwdDrive = leftBackDrive = 0;
     if (i == 0)
     {
