@@ -138,7 +138,7 @@ void MoveFwd()
     }
     else if (goalX == x && goalY == y)
     {
-        rightFwdDrive = leftBackDrive = leftFwdDrive = leftBackDrive = 0;
+        rightFwdDrive = rightBackDrive = leftFwdDrive = leftBackDrive = 0;
         movement.detach();
     }
 }
