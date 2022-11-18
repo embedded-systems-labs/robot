@@ -1,10 +1,10 @@
 #include "mbed.h"
 #include <chrono>
 
-//the wheel speed
+// the wheel speed
 const float wheelSpeed = 1.0;
 
-chrono::milliseconds turn =700ms;
+chrono::milliseconds turn = 700ms;
 chrono::milliseconds on = 420ms;
 
 // digital outputs for the wheels
@@ -59,165 +59,146 @@ void MoveFwd()
     // if the robot is not at the goal position
     if (goalX != x || goalY != y)
     {
-        switch (face)
+        if (face == north)
         {
-        case north:
-            switch (x, y)
+            if (y < goalY)
             {
-            case y < goalY:
                 rightFwdDrive = leftFwdDrive = 1;
                 rightBackDrive = leftBackDrive = 0;
                 y++;
-                break;
-            case y > goalY:
+            }
+            else if (y > goalY)
+            {
                 rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 y--;
-                break;
-            case x < goalX:
-                movement.attach(&turnRight, 666ms);
-                break;
-            case x > goalX:
-                movement.attach(&turnLeft, 666ms);
-                break;
-            default:
-                break;
             }
-            break;
-        case south:
-            switch (x, y)
+            else if (x < goalX)
+                movement.attach(&turnRight, turn);
+            else if (x > goalX)
+                movement.attach(&turnLeft, turn);
+        }
+
+        else if (face == south)
+        {
+            if (y < goalY)
             {
-            case y < goalY:
                 rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 y++;
-                break;
-            case y > goalY:
+            }
+            else if (y > goalY)
+            {
                 rightFwdDrive = leftFwdDrive = 1;
                 rightBackDrive = leftBackDrive = 0;
                 y--;
-                break;
-            case x < goalX:
-                movement.attach(&turnLeft, 666ms);
-                break;
-            case x > goalX:
-                movement.attach(&turnRight, 666ms);
-                break;
-            default:
-                break;
             }
-            break;
-        case east:
-            switch (x, y)
+            else if (x < goalX)
+                movement.attach(&turnLeft, turn);
+            else if (x > goalX)
+                movement.attach(&turnRight, turn);
+        }
+
+        else if (face == east)
+        {
+            if (x < goalX)
             {
-            case y < goalY:
-                movement.attach(&turnLeft, 666ms);
-                break;
-            case y > goalY:
-                movement.attach(&turnRight, 666ms);
-                break;
-            case x < goalX:
                 rightFwdDrive = leftFwdDrive = 1;
                 rightBackDrive = leftBackDrive = 0;
                 x++;
-                break;
-            case x > goalX:
+            }
+            else if (x > goalX)
+            {
                 rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 x--;
-                break;
-            default:
-                break;
             }
-            break;
-        case west:
-            switch (x, y)
+            else if (y < goalY)
+                movement.attach(&turnLeft, turn);
+            else if (y > goalY)
+                movement.attach(&turnRight, turn);
+        }
+
+        else if (face == west)
+        {
+            if (x < goalX)
             {
-            case y < goalY:
-                movement.attach(&turnRight, 666ms);
-                break;
-            case y > goalY:
-                movement.attach(&turnLeft, 666ms);
-                break;
-            case x < goalX:
                 rightBackDrive = leftBackDrive = 1;
                 rightFwdDrive = leftFwdDrive = 0;
                 x++;
-                break;
-            case x > goalX:
+            }
+            else if (x > goalX)
+            {
                 rightFwdDrive = leftFwdDrive = 1;
                 rightBackDrive = leftBackDrive = 0;
                 x--;
+            }
+            else if (y < goalY)
+                movement.attach(&turnRight, turn);
+            else if (y > goalY)
+                movement.attach(&turnLeft, turn);
+        }
+        else if (goalX == x && goalY == y)
+        {
+            rightFwdDrive = rightBackDrive = leftFwdDrive = leftBackDrive = 0;
+            movement.detach();
+        }
+    }
+    void turnLeft()
+    {
+        rightFwdDrive = leftBackDrive = 1;
+        rightBackDrive = leftFwdDrive = 0;
+        if (i == 0)
+        {
+            switch (face)
+            {
+            case north:
+                face = west;
                 break;
-            default:
+            case south:
+                face = east;
+                break;
+            case west:
+                face = south;
+                break;
+            case east:
+                face = north;
                 break;
             }
-            break;
-        default:
-            break;
+            i++;
         }
-    }
-    else if (goalX == x && goalY == y)
-    {
-        rightFwdDrive = rightBackDrive = leftFwdDrive = leftBackDrive = 0;
-        movement.detach();
-    }
-}
-void turnLeft()
-{
-    rightFwdDrive = leftBackDrive = 1;
-    rightBackDrive = leftFwdDrive = 0;
-    if (i == 0)
-    {
-        switch (face)
+        else
         {
-        case north:
-            face = west;
-            break;
-        case south:
-            face = east;
-            break;
-        case west:
-            face = south;
-            break;
-        case east:
-            face = north;
-            break;
+            i = 0;
+            movement.attach(&MoveFwd, on);
         }
-        i++;
     }
-    else
+    void turnRight()
     {
-        i = 0;
-        movement.attach(&MoveFwd, on);
-    }
-}
-void turnRight()
-{
-    rightBackDrive = leftFwdDrive = 1;
-    rightFwdDrive = leftBackDrive = 0;
-    if (i == 0)
-    {
-        switch (face)
+        rightBackDrive = leftFwdDrive = 1;
+        rightFwdDrive = leftBackDrive = 0;
+        if (i == 0)
         {
-        case north:
-            face = east;
-            break;
-        case south:
-            face = west;
-            break;
-        case west:
-            face = north;
-            break;
-        case east:
-            face = south;
-            break;
+            switch (face)
+            {
+            case north:
+                face = east;
+                break;
+            case south:
+                face = west;
+                break;
+            case west:
+                face = north;
+                break;
+            case east:
+                face = south;
+                break;
+            }
+            i++;
         }
-        i++;
+        else
+        {
+            i = 0;
+            movement.attach(&MoveFwd, on);
+        }
     }
-    else
-    {
-        i = 0;
-        movement.attach(&MoveFwd, on);
-    }
-}
