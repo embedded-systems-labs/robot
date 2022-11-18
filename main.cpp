@@ -1,7 +1,11 @@
 #include "mbed.h"
+#include <chrono>
 
 //the wheel speed
-const float wheelSpeed = 0.1;
+const float wheelSpeed = 1.0;
+
+chrono::milliseconds turn =700ms;
+chrono::milliseconds on = 420ms;
 
 // digital outputs for the wheels
 DigitalOut rightFwdDrive(D7), rightBackDrive(D6),
@@ -46,9 +50,9 @@ int main()
 {
     rightFwdDrive = leftBackDrive = leftFwdDrive = rightBackDrive = 0;
     rightWheelSpeed = leftWheelSpeed = wheelSpeed;
-    rightWheelSpeed.period(0.5);
-    leftWheelSpeed.period(0.5);
-    movement.attach(&MoveFwd, 1000ms);
+    rightWheelSpeed.period(0.1);
+    leftWheelSpeed.period(0.1);
+    movement.attach(&MoveFwd, on);
 }
 
 void MoveFwd()
@@ -71,9 +75,9 @@ void MoveFwd()
                 y--;
             }
             else if (x < goalX)
-                movement.attach(&turnRight, 666ms);
+                movement.attach(&turnRight, turn);
             else if (x > goalX)
-                movement.attach(&turnLeft, 666ms);
+                movement.attach(&turnLeft, turn);
         }
 
         else if (face == south)
@@ -91,9 +95,9 @@ void MoveFwd()
                 y--;
             }
             else if (x < goalX)
-                movement.attach(&turnLeft, 666ms);
+                movement.attach(&turnLeft, turn);
             else if (x > goalX)
-                movement.attach(&turnRight, 666ms);
+                movement.attach(&turnRight, turn);
         }
 
         else if (face == east)
@@ -111,9 +115,9 @@ void MoveFwd()
                 x--;
             }
             else if (y < goalY)
-                movement.attach(&turnLeft, 666ms);
+                movement.attach(&turnLeft, turn);
             else if (y > goalY)
-                movement.attach(&turnRight, 666ms);
+                movement.attach(&turnRight, turn);
         }
 
         else if (face == west)
@@ -131,9 +135,9 @@ void MoveFwd()
                 x--;
             }
             else if (y < goalY)
-                movement.attach(&turnRight, 666ms);
+                movement.attach(&turnRight, turn);
             else if (y > goalY)
-                movement.attach(&turnLeft, 666ms);
+                movement.attach(&turnLeft, turn);
         }
     }
     else if (goalX == x && goalY == y)
@@ -168,7 +172,7 @@ void turnLeft()
     else
     {
         i = 0;
-        movement.attach(&MoveFwd, 1000ms);
+        movement.attach(&MoveFwd, on);
     }
 }
 void turnRight()
@@ -197,6 +201,6 @@ void turnRight()
     else
     {
         i = 0;
-        movement.attach(&MoveFwd, 1000ms);
+        movement.attach(&MoveFwd, on);
     }
 }
