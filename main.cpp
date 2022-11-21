@@ -8,8 +8,8 @@ chrono::milliseconds turn = 160ms;
 chrono::milliseconds on = 420ms;
 
 // digital outputs for the wheels
-DigitalOut rightFwdDrive(D7), rightBackDrive(D6), leftFwdDrive(D5),
-    leftBackDrive(D4);
+DigitalOut rightFwdDrive(D4), rightBackDrive(D5), leftFwdDrive(D6),
+    leftBackDrive(D7);
 
 // digital outputs for the Pulse Width Modulation controlling wheel speed
 PwmOut rightWheelSpeed(D9), leftWheelSpeed(D3);
