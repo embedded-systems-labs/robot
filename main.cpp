@@ -4,12 +4,12 @@
 // the wheel speed
 const float wheelSpeed = .9;
 
-chrono::milliseconds turn = 160ms;
+chrono::milliseconds turn = 200ms;
 chrono::milliseconds on = 420ms;
 
 // digital outputs for the wheels
-DigitalOut rightFwdDrive(D4), rightBackDrive(D5), leftFwdDrive(D6),
-    leftBackDrive(D7);
+DigitalOut rightFwdDrive(D5), rightBackDrive(D4), leftFwdDrive(D7),
+    leftBackDrive(D6);
 
 // digital outputs for the Pulse Width Modulation controlling wheel speed
 PwmOut rightWheelSpeed(D9), leftWheelSpeed(D3);
@@ -19,7 +19,7 @@ Ticker movement;
 
 // x,y are the robot starting position
 // goalX,goalY are the goal position
-int x = 0, y = 0, goalX = 2, goalY = 2;
+int x = 0, y = 0, goalX = 0, goalY = 5;
 
 // the robot's current ready state
 int i = 0;
@@ -33,6 +33,8 @@ void turnRight();
 // function that moves the robot forward
 void MoveFwd();
 
+void Dance();
+
 // possible orientations of the robot
 enum cardinalDirection { north, south, east, west };
 
@@ -40,10 +42,10 @@ enum cardinalDirection { north, south, east, west };
 cardinalDirection face = north;
 
 int main() {
+  rightWheelSpeed.period(0.2);
+  leftWheelSpeed.period(0.1);
   rightFwdDrive = leftBackDrive = leftFwdDrive = rightBackDrive = 0;
   rightWheelSpeed = leftWheelSpeed = wheelSpeed;
-  rightWheelSpeed.period(0.1);
-  leftWheelSpeed.period(0.1);
   movement.attach(&MoveFwd, on);
   while (1) {
   }
@@ -51,6 +53,8 @@ int main() {
 
 void MoveFwd() {
   rightBackDrive = rightFwdDrive = leftBackDrive = leftFwdDrive =0;
+  rightWheelSpeed.period(0.2);
+  leftWheelSpeed.period(0.1);
   // if the robot is not at the goal position
   if (goalX != x || goalY != y) {
     if (face == north) {
@@ -114,19 +118,29 @@ void MoveFwd() {
     } 
   }
   else if (goalX == x && goalY == y) {
-    rightFwdDrive = rightBackDrive = leftFwdDrive = leftBackDrive = 0;
-    goalX=0;goalY=0;
-    if (x != goalX&& y!=goalY){
-        movement.attach(&turnRight, turn);
-    }
-    else{ leftFwdDrive = rightFwdDrive =
+    leftFwdDrive = rightFwdDrive =
     leftBackDrive = rightBackDrive = 0;
-    movement.detach();}
+    Dance();
+    movement.detach();
   }
 }
-void turnLeft() {
+
+void Dance(){
+  rightBackDrive = leftFwdDrive = 1;
+  rightFwdDrive = leftBackDrive = 0;
+  wait_us(6000000);
   rightFwdDrive = leftBackDrive = 1;
   rightBackDrive = leftFwdDrive = 0;
+  wait_us(6000000);
+  rightFwdDrive = leftBackDrive = 0;
+  rightBackDrive = leftFwdDrive = 0;
+  movement.detach();
+}
+void turnLeft() {
+  rightWheelSpeed.period(0.1);
+  leftWheelSpeed.period(0.1);
+  rightBackDrive = leftFwdDrive = 1;
+  rightFwdDrive = leftBackDrive = 0;
   if (i == 0) {
     switch (face) {
     case north:
@@ -150,8 +164,10 @@ void turnLeft() {
   }
 }
 void turnRight() {
-  rightBackDrive = leftFwdDrive = 1;
-  rightFwdDrive = leftBackDrive = 0;
+  rightWheelSpeed.period(0.1);
+  leftWheelSpeed.period(0.1);
+  rightFwdDrive = leftBackDrive = 1;
+  rightBackDrive = leftFwdDrive = 0;
   if (i == 0) {
     switch (face) {
     case north:
