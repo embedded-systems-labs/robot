@@ -11,11 +11,21 @@ chrono::milliseconds on = 420ms;
 DigitalOut rightFwdDrive(D5), rightBackDrive(D4), leftFwdDrive(D7),
     leftBackDrive(D6);
 
+//Display for Y
+BusOut displayY(PC_3,PC_2,PH_1,PH_0,
+PC_15, PC_14,PC_13);
+
+//Display for X 
+BusOut displayX();
+
 // digital outputs for the Pulse Width Modulation controlling wheel speed
 PwmOut rightWheelSpeed(D9), leftWheelSpeed(D3);
 
 // ticker that movement instructions are sent to
 Ticker movement;
+
+// is there a wall in front of the robot
+bool wall = false;
 
 // x,y are the robot starting position
 // goalX,goalY are the goal position
@@ -23,6 +33,14 @@ int x = 0, y = 0, goalX = 0, goalY = 5;
 
 // the robot's current ready state
 int i = 0;
+
+
+// function that displays position that the robot is in
+void displayNode(int num, BusOut dis);
+
+
+// function that scans for walls that robot must avoid
+void scanWall();
 
 // function that rotates the robot counter clockwise
 void turnLeft();
@@ -143,21 +161,14 @@ void turnLeft() {
   rightFwdDrive = leftBackDrive = 0;
   if (i == 0) {
     switch (face) {
-    case north:
-      face = west;
-      break;
-    case south:
-      face = east;
-      break;
-    case west:
-      face = south;
-      break;
-    case east:
-      face = north;
-      break;
+    case north:face = west;break;
+    case south:face = east;break;
+    case west:face = south;break;
+    case east:face = north;break;
     }
     i++;
-  } else {
+  } 
+  else {
     i = 0;
     rightBackDrive = rightFwdDrive = leftBackDrive = leftFwdDrive =0;
     movement.attach(&MoveFwd, on);
@@ -170,23 +181,29 @@ void turnRight() {
   rightBackDrive = leftFwdDrive = 0;
   if (i == 0) {
     switch (face) {
-    case north:
-      face = west;
-      break;
-    case south:
-      face = east;
-      break;
-    case west:
-      face = south;
-      break;
-    case east:
-      face = north;
-      break;
+    case north:face = west;break;
+    case south:face = east;break;
+    case west:face = south;break;
+    case east:face = north;break;
     }
     i++;
-  } else {
+  } 
+  else {
     i = 0;
     rightBackDrive = rightFwdDrive = leftBackDrive = leftFwdDrive =0;
     movement.attach(&MoveFwd, on);
   }
+}
+
+void displayNode(int num, BusOut dis){
+    switch (num) {
+        case 0:dis = 0;break;
+        case 1:dis = 1;break;
+        case 2:dis = 2;break;
+        case 3:dis = 3;break;
+        case 4:dis = 4;break;
+        case 5:dis = 5;break;
+        case 6:dis = 6;break;
+        default:dis =12;break;
+    }
 }
