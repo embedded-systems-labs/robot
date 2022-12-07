@@ -1,18 +1,20 @@
 #include "mbed.h"
+#include "nRF24L01P.h"
 #include <chrono>
 #include <cstdio>
-#include "nRF24L01P.h"
+
 
 // the wheel speed
-const float wheelSpeed = 95;
+const float wheelSpeed = .6;
 
 AnalogOut wallCh(A2);
 
 chrono::milliseconds turn = 200ms;
 chrono::milliseconds _180 = 400ms;
-chrono::milliseconds on = 460ms;
+chrono::milliseconds on = 500ms;
 
-nRF24L01P my_nrf24l01p(D11,D12,D13,D15,D14,D2); //mosi, miso, sck, csn, ce, irq
+nRF24L01P my_nrf24l01p(D11, D12, D13, D15, D14,
+                       D2); // mosi, miso, sck, csn, ce, irq
 
 int TrCounter = 0;
 
@@ -58,67 +60,66 @@ cardinalDirection face = north;
 
 int main() {
 
-    #define Transfer_Size 3
-    char rxData[Transfer_Size];
-    int rxDataCnt = 0;
-    my_nrf24l01p.powerUp();
-    my_nrf24l01p.setRfOutputPower(-6);
-    my_nrf24l01p.setRxAddress((0x1F22676D90),DEFAULT_NRF24L01P_ADDRESS_WIDTH);
-    my_nrf24l01p.setAirDataRate(2000);
-    printf( "nRF24L01+ Frequency    : %d MHz\r\n",  my_nrf24l01p.getRfFrequency() );
-    printf( "nRF24L01+ Output power : %d dBm\r\n",  my_nrf24l01p.getRfOutputPower() );
-    printf( "nRF24L01+ Data Rate    : %d kbps\r\n", my_nrf24l01p.getAirDataRate() );
-    printf( "nRF24L01+ RX Address   : 0x%010llX\r\n", my_nrf24l01p.getRxAddress() );
-    my_nrf24l01p.setTransferSize( Transfer_Size);
-    my_nrf24l01p.setReceiveMode();
-    my_nrf24l01p.enable();
-    trig = 0;
-  
+#define Transfer_Size 3
+  char rxData[Transfer_Size];
+  int rxDataCnt = 0;
+  my_nrf24l01p.powerUp();
+  my_nrf24l01p.setRfOutputPower(-6);
+  my_nrf24l01p.setRxAddress((0x1F22676D90), DEFAULT_NRF24L01P_ADDRESS_WIDTH);
+  my_nrf24l01p.setAirDataRate(2000);
+  printf("nRF24L01+ Frequency    : %d MHz\r\n", my_nrf24l01p.getRfFrequency());
+  printf("nRF24L01+ Output power : %d dBm\r\n",
+         my_nrf24l01p.getRfOutputPower());
+  printf("nRF24L01+ Data Rate    : %d kbps\r\n", my_nrf24l01p.getAirDataRate());
+  printf("nRF24L01+ RX Address   : 0x%010llX\r\n", my_nrf24l01p.getRxAddress());
+  my_nrf24l01p.setTransferSize(Transfer_Size);
+  my_nrf24l01p.setReceiveMode();
+  my_nrf24l01p.enable();
+  trig = 0;
+  rightBackDrive = rightFwdDrive = leftBackDrive = leftFwdDrive = 0;
   while (1) {
-      if ( my_nrf24l01p.readable() ) {
-          my_nrf24l01p.read( NRF24L01P_PIPE_P0, rxData, sizeof( rxData ) );
-          printf("x: %d\n", rxData[2]);
-          printf("y: %d\n", rxData[1]);
-          printf("start, %d\n",rxData[0]);
-          if (rxData[0] == 1){ 
-              goalX = rxData[2];
-              goalY = rxData[1];
-              rxData[0] = 0;
-              x = y = 0;
-              face = north;
-              wall = false;
-              movement.attach(&MoveFwd, on);
-             
-              }
-        }
-      trig = 1;
-      wait_us(10);
-      trig = 0;
-      wait_us(1000);
-      if (echo <= 0.6f ) {
-        wall = true;
-        wallCh = 0;
-      }
-      else {
-        wall = false;
-        wallCh = 1;
-      }
-      wait_us(10000);
+    rightWheelSpeed.period(1.6);
+    leftWheelSpeed.period(1.6);
 
+    rightWheelSpeed = leftWheelSpeed = wheelSpeed;
+    if (my_nrf24l01p.readable()) {
+      my_nrf24l01p.read(NRF24L01P_PIPE_P0, rxData, sizeof(rxData));
+      printf("x: %d\n", rxData[2]);
+      printf("y: %d\n", rxData[1]);
+      printf("start, %d\n", rxData[0]);
+      if (rxData[0] == 1) {
+        goalX = rxData[2];
+        goalY = rxData[1];
+        rxData[0] = 0;
+        x = y = 0;
+        face = north;
+        wall = false;
+        movement.attach(&MoveFwd, on);
+      }
     }
+    trig = 1;
+    wait_us(10);
+    trig = 0;
+    wait_us(1000);
+    if (echo <= 0.6f) {
+      wall = false;
+      wallCh = 0;
+    } else {
+      wall = false;
+      wallCh = 1;
+    }
+    wait_us(10000);
+  }
 }
 
 void MoveFwd() {
-  rightBackDrive = rightFwdDrive = leftBackDrive = leftFwdDrive = 0;
-  rightWheelSpeed = leftWheelSpeed = wheelSpeed;
-  rightWheelSpeed.period(0.2);
-  leftWheelSpeed.period(0.2);
+
   // if the robot is not at the goal position
   if (goalX != x || goalY != y) {
     if (face == north) {
       if (y < goalY && wall == false) {
-        rightFwdDrive = leftFwdDrive = 1;
         rightBackDrive = leftBackDrive = 0;
+        rightFwdDrive = leftFwdDrive = 1;
         y++;
       } else if (y > goalY) {
         movement.attach(&turnRight, _180);
@@ -143,8 +144,8 @@ void MoveFwd() {
 
     else if (face == east) {
       if (x < goalX && wall == false) {
-        rightFwdDrive = leftFwdDrive = 1;
         rightBackDrive = leftBackDrive = 0;
+        rightFwdDrive = leftFwdDrive = 1;
         x++;
       } else if (x > goalX) {
         movement.attach(&turnRight, _180);
@@ -166,13 +167,11 @@ void MoveFwd() {
       else if (y > goalY)
         movement.attach(&turnLeft, turn);
     }
-  }
-  else {
+  } else {
     leftFwdDrive = rightFwdDrive = leftBackDrive = rightBackDrive = 0;
     movement.attach(&Dance, 2000ms);
-  }      
+  }
 }
-
 
 void Dance() {
   rightBackDrive = leftFwdDrive = 1;
@@ -187,18 +186,23 @@ void Dance() {
   movement.detach();
 }
 
-
 void turnLeft() {
-  rightWheelSpeed.period(0.1);
-  leftWheelSpeed.period(0.1);
   rightBackDrive = leftFwdDrive = 0;
   rightFwdDrive = leftBackDrive = 1;
   if (i == 0) {
     switch (face) {
-    case north:face = west;break;
-    case south:face = east;break;
-    case west:face = south;break;
-    case east:face = north;break;
+    case north:
+      face = west;
+      break;
+    case south:
+      face = east;
+      break;
+    case west:
+      face = south;
+      break;
+    case east:
+      face = north;
+      break;
     }
     i++;
   } else {
@@ -208,18 +212,23 @@ void turnLeft() {
   }
 }
 
-
 void turnRight() {
-  rightWheelSpeed.period(0.1);
-  leftWheelSpeed.period(0.1);
   rightFwdDrive = leftBackDrive = 0;
   rightBackDrive = leftFwdDrive = 1;
   if (i == 0) {
     switch (face) {
-    case north:face = east;break;
-    case south:face = west;break;
-    case west:face = north;break;
-    case east:face = south;break;
+    case north:
+      face = east;
+      break;
+    case south:
+      face = west;
+      break;
+    case west:
+      face = north;
+      break;
+    case east:
+      face = south;
+      break;
     }
     i++;
   } else {
